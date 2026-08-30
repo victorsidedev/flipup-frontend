@@ -1,22 +1,9 @@
+import { normalizeImageUrls } from "../../utils/imageUrls.js";
+
 export const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-export function normalizeImages(value, fallbackValue) {
-    const rawImages = Array.isArray(value) ? value : [];
-    const normalized = rawImages.filter(
-        (image) => typeof image === "string" && image.trim().length > 0,
-    );
-
-    if (normalized.length > 0) {
-        return normalized;
-    }
-
-    if (typeof fallbackValue === "string" && fallbackValue.trim().length > 0) {
-        return [fallbackValue];
-    }
-
-    return [];
-}
+export { normalizeImageUrls as normalizeImages } from "../../utils/imageUrls.js";
 
 export function validateImageFiles(files = []) {
     const errors = [];
@@ -47,11 +34,11 @@ export function removeImageAt(images = [], index) {
 }
 
 export function getPrimaryImage(purchase = {}) {
-    return normalizeImages(purchase.images, purchase.imageUrl)[0] ?? null;
+    return normalizeImageUrls(purchase.images, purchase.imageUrl)[0] ?? null;
 }
 
 export function getImageBadgeCount(purchase = {}) {
-    return Math.max(0, normalizeImages(purchase.images, purchase.imageUrl).length - 1);
+    return Math.max(0, normalizeImageUrls(purchase.images, purchase.imageUrl).length - 1);
 }
 
 export function getImageSummaryLabel(count = 0) {
@@ -66,16 +53,36 @@ export function getImageSummaryLabel(count = 0) {
     return `${count} images added`;
 }
 
-export function readFilesAsDataUrls(files = []) {
-    return Promise.all(
-        Array.from(files).map(
-            (file) => new Promise((resolve, reject) => {
-                const reader = new FileReader();
+export function getItemSummaryLabel(count = 0) {
+    if (count === 0) {
+        return "No items added";
+    }
 
-                reader.onload = () => resolve(String(reader.result));
-                reader.onerror = () => reject(new Error(`Could not read file ${file.name}`));
-                reader.readAsDataURL(file);
-            }),
-        ),
-    );
+    if (count === 1) {
+        return "1 item added";
+    }
+
+    return `${count} items added`;
+}
+
+export function getItemImageSrc(image) {
+    if (!image) return "";
+    if (image instanceof File) {
+        return URL.createObjectURL(image);
+    }
+    if (typeof image === "string") {
+        if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("data:") || image.startsWith("blob:")) {
+            return image;
+        }
+        return `http://127.0.0.1:5000/${image.replace(/^\//, "")}`;
+    }
+    if (typeof image === "object" && image !== null) {
+        const path = image.path || image.url || image.filename || image.src || "";
+        if (!path) return "";
+        if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:") || path.startsWith("blob:")) {
+            return path;
+        }
+        return `http://127.0.0.1:5000/${path.replace(/^\//, "")}`;
+    }
+    return "";
 }

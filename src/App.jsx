@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./layout/Layout";
 import Overview from "./pages/Overview";
 import Purchases from "./pages/Purchases/Purchases";
-import Inventory from "./pages/Inventory";
+import Inventory from "./pages/Inventory/Inventory";
 import Settings from "./pages/Settings";
 
 function App() {

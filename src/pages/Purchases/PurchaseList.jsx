@@ -23,6 +23,8 @@ function PurchaseList({
     onCancelEdit,
     onImageUpload,
     onRemoveImage,
+    onEditImageUpload,
+    onEditRemoveImage,
     imageError,
 }) {
     return (
@@ -44,9 +46,9 @@ function PurchaseList({
                     bgcolor: showForm ? "background.paper" : "#f8fafc",
                     border: showForm ? "1px solid" : "1.5px dashed",
                     borderColor: showForm ? "primary.main" : "rgba(59, 130, 246, 0.38)",
-                    borderRadius: 2,
+                    borderRadius: 1,
                     cursor: showForm ? "default" : "pointer",
-                    p: { xs: 2, md: 2.25 },
+                    p: { xs: 1.5, sm: 2, md: 2.25 },
                     textAlign: "left",
                     transition: "border-color 160ms ease, box-shadow 160ms ease",
                     width: "100%",
@@ -70,9 +72,9 @@ function PurchaseList({
                             sx={{
                                 alignItems: "center",
                                 backgroundColor: "rgba(59, 130, 246, 0.08)",
-                                border: "1px solid",
+                                border: "1px dashed",
                                 borderColor: "rgba(59, 130, 246, 0.2)",
-                                borderRadius: 1.5,
+                                borderRadius: 1,
                                 color: "primary.main",
                                 display: "flex",
                                 height: { xs: 80, md: 100 },
@@ -113,6 +115,11 @@ function PurchaseList({
                 )}
             </Paper>
 
+            <Box sx={{ mb: 1.5, px: { xs: 2, md: 0 } }}>
+                <Typography variant="h6" sx={{ fontSize: 16, fontWeight: 400, color: "text.secondary" }}>
+                    Previous Purchases
+                </Typography>
+            </Box>
             {purchases.map((purchaseItem, index) => (
                 <PurchaseItem
                     key={purchaseItem.id ?? index}
@@ -123,6 +130,9 @@ function PurchaseList({
                     onOpen={() => onOpenPurchase(purchaseItem)}
                     onSubmit={onUpdate}
                     onCancel={onCancelEdit}
+                    onImageUpload={onEditImageUpload}
+                    onRemoveImage={onEditRemoveImage}
+                    imageError={imageError}
                 />
             ))}
         </Stack>

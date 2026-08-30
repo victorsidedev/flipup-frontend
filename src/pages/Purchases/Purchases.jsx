@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { fetchPurchases, createPurchase, updatePurchase } from "../../api/purchases";
 import PurchaseList from "./PurchaseList";
-import { readFilesAsDataUrls, removeImageAt, validateImageFiles } from "./purchaseImageUtils";
+import { removeImageAt, validateImageFiles } from "./purchaseImageUtils";
 
 function createEmptyPurchase() {
     return {
@@ -59,6 +59,7 @@ function Purchases() {
         }
 
         setShowForm(false);
+        setImageError("");
         setActivePurchaseId(purchaseToEdit.id);
         setEditingPurchase({ ...purchaseToEdit });
     }
@@ -70,7 +71,7 @@ function Purchases() {
         setShowForm(true);
     }
 
-    function handleImageUpload(event) {
+    function addImagesToPurchase(event, setPurchaseState) {
         const files = Array.from(event.target.files ?? []);
         if (files.length === 0) {
             return;
@@ -83,33 +84,41 @@ function Purchases() {
             return;
         }
 
-        readFilesAsDataUrls(files)
-            .then((dataUrls) => {
-                setPurchase((prev) => ({
-                    ...prev,
-                    images: [...(prev.images ?? []), ...dataUrls],
-                    imageUrl: (prev.images ?? []).length > 0 ? prev.imageUrl : dataUrls[0] ?? prev.imageUrl,
-                }));
-                setImageError("");
-            })
-            .catch((error) => {
-                console.error("Failed to upload purchase images:", error);
-                setImageError("Could not read one or more images.");
-            });
+        setPurchaseState((prev) => ({
+            ...prev,
+            images: [...(prev.images ?? []), ...files],
+        }));
+        setImageError("");
 
         event.target.value = "";
     }
 
-    function handleRemoveImage(index) {
-        setPurchase((prev) => {
+    function handleImageUpload(event) {
+        addImagesToPurchase(event, setPurchase);
+    }
+
+    function handleEditImageUpload(event) {
+        addImagesToPurchase(event, setEditingPurchase);
+    }
+
+    function removeImageFromPurchase(index, setPurchaseState) {
+        setPurchaseState((prev) => {
             const nextImages = removeImageAt(prev.images, index);
 
             return {
                 ...prev,
                 images: nextImages,
-                imageUrl: nextImages[0] ?? "",
+                imageUrl: nextImages.find((image) => typeof image === "string") ?? "",
             };
         });
+    }
+
+    function handleRemoveImage(index) {
+        removeImageFromPurchase(index, setPurchase);
+    }
+
+    function handleEditRemoveImage(index) {
+        removeImageFromPurchase(index, setEditingPurchase);
     }
 
     async function handleUpdate(event) {
@@ -122,6 +131,7 @@ function Purchases() {
             )));
             setActivePurchaseId(null);
             setEditingPurchase(null);
+            setImageError("");
         } catch (error) {
             console.error("Failed to update purchase:", error);
         }
@@ -130,6 +140,7 @@ function Purchases() {
     function cancelEdit() {
         setActivePurchaseId(null);
         setEditingPurchase(null);
+        setImageError("");
     }
 
     async function handleSubmit(event) {
@@ -155,20 +166,7 @@ function Purchases() {
 
     return (
         <Stack spacing={3}>
-            <Box>
-                <Typography
-                    variant="overline"
-                    color="text.secondary"
-                    sx={{ fontWeight: 700, letterSpacing: "0.12em" }}
-                >
-                    Operations
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: "-0.03em" }}>
-                    Resale Inventory
-                </Typography>
-            </Box>
-
-            <Box sx={{ mx: { xs: -2, md: 0 }, px: { xs: 0, md: 0 } }}>
+            <Box sx={{ mx: { xs: -2, md: 0 } }}>
                 <Box sx={{ mb: 1.5, px: { xs: 2, md: 0 } }}>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         Purchases
@@ -191,6 +189,8 @@ function Purchases() {
                     onCancelEdit={cancelEdit}
                     onImageUpload={handleImageUpload}
                     onRemoveImage={handleRemoveImage}
+                    onEditImageUpload={handleEditImageUpload}
+                    onEditRemoveImage={handleEditRemoveImage}
                     imageError={imageError}
                 />
             </Box>

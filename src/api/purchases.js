@@ -1,14 +1,14 @@
+import { normalizeImageUrls } from "../utils/imageUrls.js";
+
 function toFrontendPurchase(purchase) {
-    const images = Array.isArray(purchase.images)
-        ? purchase.images.filter((image) => typeof image === "string" && image.trim().length > 0)
-        : [];
-    const imageUrl = purchase.image_url ?? purchase.imageUrl ?? images[0] ?? "";
+    const imageUrl = purchase.image_url ?? purchase.imageUrl ?? "";
+    const images = normalizeImageUrls(purchase.images, imageUrl);
 
     return {
         ...purchase,
         date: purchase.purchased_on?.slice(0, 10) ?? purchase.date ?? "",
-        imageUrl,
-        images: images.length > 0 ? images : (typeof purchase.image_url === "string" && purchase.image_url.trim().length > 0 ? [purchase.image_url] : [imageUrl].filter(Boolean)),
+        imageUrl: imageUrl || images[0] || "",
+        images,
         name: purchase.title ?? purchase.name ?? "",
         paymentMode: purchase.payment_mode ?? purchase.paymentMode ?? "",
         cost: purchase.purchase_price ?? purchase.cost ?? "",
@@ -18,9 +18,7 @@ function toFrontendPurchase(purchase) {
 }
 
 function toApiPurchase(purchase) {
-    const images = Array.isArray(purchase.images)
-        ? purchase.images.filter((image) => typeof image === "string" && image.trim().length > 0)
-        : [];
+    const images = normalizeImageUrls(purchase.images, purchase.imageUrl);
 
     return {
         ...purchase,
@@ -36,6 +34,7 @@ function toApiPurchase(purchase) {
 export function buildPurchaseFormData(purchase) {
     const purchasePayload = toApiPurchase(purchase);
     const formData = new FormData();
+    const existingPurchaseImages = normalizeImageUrls(purchase.images, purchase.imageUrl);
 
     const rawPurchaseImages = Array.isArray(purchase.images)
         ? purchase.images.filter((image) => image instanceof File)
@@ -43,20 +42,24 @@ export function buildPurchaseFormData(purchase) {
 
     const items = Array.isArray(purchasePayload.items)
         ? purchasePayload.items.map((item) => {
+            const existingItemImages = Array.isArray(item.images)
+                ? item.images.filter((image) => !(image instanceof File))
+                : [];
             const itemImages = Array.isArray(item.images)
                 ? item.images.filter((image) => image instanceof File)
                 : [];
 
             return {
                 ...item,
-                images: itemImages.map((image) => image.name),
+                images: [...existingItemImages, ...itemImages.map((image) => image.name)],
             };
         })
         : [];
 
     formData.append("purchase", JSON.stringify({
         ...purchasePayload,
-        images: rawPurchaseImages.map((image) => image.name),
+        image_url: existingPurchaseImages[0] ?? rawPurchaseImages[0]?.name ?? "",
+        images: [...existingPurchaseImages, ...rawPurchaseImages.map((image) => image.name)],
         items,
     }));
 
@@ -105,10 +108,7 @@ export async function createPurchase(purchase) {
 export async function updatePurchase(purchase) {
     const response = await fetch(`http://127.0.0.1:5000/purchases/${purchase.id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(toApiPurchase(purchase)),
+        body: buildPurchaseFormData(purchase),
     });
 
     if (!response.ok) {

@@ -10,6 +10,8 @@ import {
   getPrimaryImage,
   getImageBadgeCount,
   getImageSummaryLabel,
+  getItemImageSrc,
+  getItemSummaryLabel,
 } from "./purchaseImageUtils.js";
 import { buildPurchaseFormData } from "../../api/purchases.js";
 
@@ -106,4 +108,53 @@ test("item image keys follow the current item ordering after reordering and remo
   assert.equal(formData.getAll("item_1_images")[0].name, "a.png");
   assert.equal(formData.getAll("item_0_images").length, 1);
   assert.equal(formData.getAll("item_1_images").length, 1);
+});
+
+test("item summary label formats item count correctly", () => {
+  assert.equal(getItemSummaryLabel(0), "No items added");
+  assert.equal(getItemSummaryLabel(1), "1 item added");
+  assert.equal(getItemSummaryLabel(3), "3 items added");
+});
+
+test("getItemImageSrc handles string, file, and API payload image objects", () => {
+  assert.equal(getItemImageSrc("http://example.com/img.jpg"), "http://example.com/img.jpg");
+  assert.equal(getItemImageSrc("uploads/items/pic.jpg"), "http://127.0.0.1:5000/uploads/items/pic.jpg");
+  assert.equal(
+    getItemImageSrc({ id: 2, path: "uploads/items/wallpaper.jpg", filename: "wallpaper.jpg" }),
+    "http://127.0.0.1:5000/uploads/items/wallpaper.jpg"
+  );
+  assert.equal(
+    getItemImageSrc({ id: 3, path: "http://example.com/remote.jpg" }),
+    "http://example.com/remote.jpg"
+  );
+});
+
+test("buildPurchaseFormData preserves existing item image objects and extra files", () => {
+  const newFile = new File(["data"], "new.png", { type: "image/png" });
+  const formData = buildPurchaseFormData({
+    name: "GPU Rig",
+    items: [
+      {
+        id: 1,
+        name: "RTX 4070 Super",
+        description: "Gigabyte RTX 4070 Super",
+        images: [
+          {
+            id: 2,
+            filename: "wallpaperswide.com-space-eye-wallpaper-3840x2400.jpg",
+            path: "uploads/items/808e0755-ae3a-4b21-bf83-be93d9194710_wallpaperswide.com-space-eye-wallpaper-3840x2400.jpg",
+          },
+          newFile,
+        ],
+      },
+    ],
+  });
+
+  const payload = JSON.parse(formData.get("purchase"));
+  assert.equal(payload.items.length, 1);
+  assert.equal(payload.items[0].images.length, 2);
+  assert.equal(payload.items[0].images[0].id, 2);
+  assert.equal(payload.items[0].images[1], "new.png");
+  assert.equal(formData.getAll("item_0_images").length, 1);
+  assert.equal(formData.getAll("item_0_images")[0].name, "new.png");
 });
