@@ -18,7 +18,7 @@ const theme = createTheme({
         divider: "#e2e8f0",
     },
     shape: {
-        borderRadius: 14,
+        borderRadius: 8,
     },
     typography: {
         fontFamily: [
@@ -81,18 +81,6 @@ const theme = createTheme({
             styleOverrides: {
                 paper: {
                     borderRadius: 20,
-                },
-            },
-        },
-        MuiTableCell: {
-            styleOverrides: {
-                root: {
-                    borderColor: "#e2e8f0",
-                },
-                head: {
-                    fontWeight: 700,
-                    color: "#0f172a",
-                    backgroundColor: "#f8fafc",
                 },
             },
         },

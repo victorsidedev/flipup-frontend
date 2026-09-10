@@ -10,7 +10,6 @@ import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import Paper from "@mui/material/Paper";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
@@ -23,7 +22,6 @@ const MOBILE_BREAKPOINT = 900;
 
 const navItems = [
     { to: "/overview", label: "Overview", icon: <DashboardOutlinedIcon /> },
-    { to: "/purchases", label: "Purchases", icon: <ShoppingCartOutlinedIcon /> },
     { to: "/inventory", label: "Inventory", icon: <Inventory2OutlinedIcon /> },
     { to: "/settings", label: "Settings", icon: <SettingsOutlinedIcon /> },
 ];
@@ -72,7 +70,7 @@ function Layout() {
                             component={NavLink}
                             to={item.to}
                             sx={{
-                                borderRadius: 2.5,
+                                borderRadius: 1,
                                 color: sidebar.text,
                                 "&:hover": { backgroundColor: sidebar.hoverBackground, color: sidebar.activeText },
                                 "&.active": {
@@ -133,6 +131,7 @@ function Layout() {
                     display: "block",
                     [`@media (min-width:${MOBILE_BREAKPOINT}px)`]: { display: "none" },
                     position: "fixed",
+                    zIndex: theme.zIndex.appBar,
                     bottom: 0,
                     left: 0,
                     right: 0,
