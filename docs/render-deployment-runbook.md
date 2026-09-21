@@ -8,36 +8,36 @@ Scope: frontend deployments. Authentication is outside the current MVP.
 
 Fill these in once and update them when infrastructure changes. Example URLs below are placeholders.
 
-| Field | Value |
-| --- | --- |
-| Repository URL | To fill in |
-| Production branch | To fill in |
-| Render service / dashboard link | To fill in |
-| Frontend URL | To fill in |
-| Production API base URL | To fill in |
+| Field                            | Value      |
+| -------------------------------- | ---------- |
+| Repository URL                   | To fill in |
+| Production branch                | To fill in |
+| Render service / dashboard link  | To fill in |
+| Frontend URL                     | To fill in |
+| Production API base URL          | To fill in |
 | Backend service / dashboard link | To fill in |
-| Deployment owner | To fill in |
-| Auto-deploy enabled? | To fill in |
+| Deployment owner                 | To fill in |
+| Auto-deploy enabled?             | To fill in |
 
 ## 1. One-time Render setup
 
 Create a **Static Site**, connect the repository, and select the production branch.
 
-| Setting | Value |
-| --- | --- |
-| Root directory | Leave blank when package.json is at the repository root |
-| Build command | `npm ci && npm run build` |
-| Publish directory | `dist` |
-| Start command | None — static sites serve built files |
+| Setting           | Value                                                   |
+| ----------------- | ------------------------------------------------------- |
+| Root directory    | Leave blank when package.json is at the repository root |
+| Build command     | `npm ci && npm run build`                               |
+| Publish directory | `dist`                                                  |
+| Start command     | None — static sites serve built files                   |
 
 `npm run dev` is only for local development. Render serves the output of `npm run build`.
 
 In **Environment**, configure:
 
-| Key | Value |
-| --- | --- |
-| `VITE_API_BASE_URL` | Actual HTTPS production backend base URL |
-| `NODE_VERSION` | `22.22.1` — version tested with this repository |
+| Key                 | Value                                           |
+| ------------------- | ----------------------------------------------- |
+| `VITE_API_BASE_URL` | Actual HTTPS production backend base URL        |
+| `NODE_VERSION`      | `22.22.1` — version tested with this repository |
 
 If the backend serves `/purchases`, use `https://your-backend.onrender.com`.
 If it serves `/api/purchases`, use `https://your-backend.onrender.com/api`.
@@ -50,9 +50,9 @@ Render can install dependencies automatically. Optionally set `SKIP_INSTALL_DEPS
 
 In **Redirects/Rewrites**, add:
 
-| Source | Destination | Action |
-| --- | --- | --- |
-| `/*` | `/index.html` | Rewrite |
+| Source | Destination   | Action  |
+| ------ | ------------- | ------- |
+| `/*`   | `/index.html` | Rewrite |
 
 This lets React Router handle direct links and refreshes such as `/inventory`. Existing static assets remain served normally. [Render routing documentation](https://render.com/docs/redirects-rewrites)
 
@@ -134,19 +134,19 @@ As of this review, `/` redirects to `/overview`, and Overview and Settings rende
 
 ## 6. Troubleshooting
 
-| Symptom | Check / resolution |
-| --- | --- |
-| Build says to set `VITE_API_BASE_URL` | Add the variable to the frontend Render service and rebuild. |
-| Build cannot find an imported file | Confirm it was committed and pushed; check filename capitalization on Linux. |
-| `npm ci` fails | Read the installation error; check lockfile consistency and Node version. |
-| `/inventory` returns a hosting 404 on refresh | Verify the `/*` → `/index.html` rule uses Rewrite. |
-| API response is HTML or reports an unexpected JSON token | Inspect the request URL. `/api` may be hitting the static frontend and receiving index.html. Set the absolute backend URL and rebuild. |
-| API returns 404 | Check whether the base URL needs `/api`; avoid duplicating or omitting the prefix. |
-| CORS header missing with status 200 | The server responded, but the browser cannot expose the response. Fix backend CORS for the actual frontend origin and redeploy the backend. |
-| GET works but saves/deletes fail | Inspect the OPTIONS preflight and allow the method and Content-Type header on the backend. |
-| HTTP backend blocked from HTTPS frontend | Configure an HTTPS backend URL and rebuild. |
-| Old API URL is still used | Confirm the correct Render service was edited and a new build ran; then refresh the browser. |
-| Blank content at `/overview` or `/settings` | These are currently empty pages; check `/inventory`. |
+| Symptom                                                  | Check / resolution                                                                                                                          |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build says to set `VITE_API_BASE_URL`                    | Add the variable to the frontend Render service and rebuild.                                                                                |
+| Build cannot find an imported file                       | Confirm it was committed and pushed; check filename capitalization on Linux.                                                                |
+| `npm ci` fails                                           | Read the installation error; check lockfile consistency and Node version.                                                                   |
+| `/inventory` returns a hosting 404 on refresh            | Verify the `/*` → `/index.html` rule uses Rewrite.                                                                                          |
+| API response is HTML or reports an unexpected JSON token | Inspect the request URL. `/api` may be hitting the static frontend and receiving index.html. Set the absolute backend URL and rebuild.      |
+| API returns 404                                          | Check whether the base URL needs `/api`; avoid duplicating or omitting the prefix.                                                          |
+| CORS header missing with status 200                      | The server responded, but the browser cannot expose the response. Fix backend CORS for the actual frontend origin and redeploy the backend. |
+| GET works but saves/deletes fail                         | Inspect the OPTIONS preflight and allow the method and Content-Type header on the backend.                                                  |
+| HTTP backend blocked from HTTPS frontend                 | Configure an HTTPS backend URL and rebuild.                                                                                                 |
+| Old API URL is still used                                | Confirm the correct Render service was edited and a new build ran; then refresh the browser.                                                |
+| Blank content at `/overview` or `/settings`              | These are currently empty pages; check `/inventory`.                                                                                        |
 
 For CORS debugging, inspect both the preflight response and the actual response in DevTools. A successful actual response should include `Access-Control-Allow-Origin` matching the frontend origin. Opening an API URL directly does not verify cross-origin browser access. Do not add `mode: 'no-cors'`: the app needs to read JSON responses.
 
@@ -167,15 +167,15 @@ Rollback reuses the previous build, including its embedded API URL. It does not 
 
 Duplicate this for each release:
 
-| Field | Value |
-| --- | --- |
-| Date / time / timezone | |
-| Deployed by | |
-| Environment / Render service | |
-| Branch / commit SHA | |
-| Render deployment link | |
-| API base URL used | |
-| Changes included | |
-| Checks and smoke-test result | |
-| Previous known-good deployment | |
-| Outcome / rollback / follow-ups | |
+| Field                           | Value |
+| ------------------------------- | ----- |
+| Date / time / timezone          |       |
+| Deployed by                     |       |
+| Environment / Render service    |       |
+| Branch / commit SHA             |       |
+| Render deployment link          |       |
+| API base URL used               |       |
+| Changes included                |       |
+| Checks and smoke-test result    |       |
+| Previous known-good deployment  |       |
+| Outcome / rollback / follow-ups |       |
