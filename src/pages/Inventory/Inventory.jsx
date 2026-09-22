@@ -127,6 +127,8 @@ export default function Inventory() {
                 <PurchasePopup
                     key={editor.purchaseId ?? 'new'}
                     open
+                    createDraftWithItem={createDraftWithItem}
+                    openSaleDialog={openSaleDialog}
                     toggleOpen={() => setEditor(null)}
                     purchaseDetails={purchases.find((group) => group.purchase.id === editor.purchaseId)}
                     selectedItemId={editor.itemId}
