@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useSaleDraft from './hooks/useSaleDraft.js';
 import { Alert, Box, Button, CircularProgress, Stack } from '@mui/material';
 import AddPurchaseButton from './components/AddPurchaseButton.jsx';
 import InventoryEmpty from './components/InventoryEmpty.jsx';
@@ -11,12 +12,27 @@ import { filterPurchaseItems } from './inventoryData.js';
 
 export default function Inventory() {
     const { purchases, loading, error, refresh, updatePurchase, removePurchase } = useInventory();
+    const {
+        openSaleDialog,
+        closeSaleDialog,
+        clearSaleDraft,
+        insertExpense,
+        updateExpense,
+        deleteExpense,
+        saleDraft,
+        saleDialogOpen,
+        createDraftWithItem,
+        toggleItemInDraft,
+        updateItemInDraft,
+        removeItemFromDraft,
+        handlePriceChange,
+        handleSoldDateChange
+    } = useSaleDraft();
+
     const [query, setQuery] = useState('');
     const [status, setStatus] = useState('all');
-    const [saleItem, setSaleItem] = useState(null);
     const [notice, setNotice] = useState('');
     const [editor, setEditor] = useState(null);
-    const [saleDraft, setSaleDraft] = useState(null);
 
     const allItems = purchases.flatMap((group) => group.items);
     const soldCount = allItems.filter((item) => item.status === 'sold').length;
@@ -30,40 +46,11 @@ export default function Inventory() {
             (group) => group.items.length > 0 || (group.total === 0 && !query.trim() && status === 'all'),
         );
 
+
     function handleSaleSaved(purchase) {
         updatePurchase(purchase);
-        setNotice(`Sale recorded for ${saleItem.name}.`);
-        setSaleItem(null);
-    }
-
-    function toggleItemInDraft(item) {
-        const existingItems = saleDraft ? saleDraft.items : [];
-        const exists = existingItems.some((draftItem) => draftItem.id === item.id);
-        setSaleDraft({
-            ...saleDraft,
-            items: exists
-                ? existingItems.filter((draftItem) => draftItem.id !== item.id)
-                : [...existingItems, item],
-        });
-    }
-
-    function updateItemInDraft(itemId, updatedFields) {
-        if (!saleDraft) return;
-        setSaleDraft({
-            ...saleDraft,
-            items: saleDraft.items.map((selectedItem) =>
-                selectedItem.id === itemId ? { ...selectedItem, ...updatedFields } : selectedItem,
-            ),
-        });
-    }
-
-    function removeItemFromDraft(itemId) {
-        console.log(itemId);
-        if (!saleDraft) return;
-        setSaleDraft({
-            ...saleDraft,
-            items: saleDraft.items.filter((draftItem) => draftItem.id !== itemId),
-        });
+        setNotice(`Sale recorded for ${saleDraft?.items?.map(item => item.name).join(', ')}.`);
+        clearSaleDraft();
     }
 
     function clearFilters() {
@@ -123,9 +110,9 @@ export default function Inventory() {
                             key={group.purchase.id}
                             saleDraft={saleDraft}
                             {...group}
-                            onSell={setSaleItem}
+                            onSell={createDraftWithItem}
                             onOpen={(purchaseId, itemId) => setEditor({ purchaseId, itemId })}
-                            onItemToggle={toggleItemInDraft}
+                            onItemSelectToggle={toggleItemInDraft}
                         />
                     ))
                 ) : (
@@ -135,7 +122,7 @@ export default function Inventory() {
                     />
                 ))}
             <AddPurchaseButton onClick={() => setEditor({ purchaseId: null, itemId: null })} />
-            {saleDraft?.items?.length > 0 && <Button onClick={() => setSaleItem(saleItem)}> Record Sales </Button>}
+            {saleDraft?.items?.length > 0 && <Button onClick={() => openSaleDialog()}> Record Sales </Button>}
             {editor && (
                 <PurchasePopup
                     key={editor.purchaseId ?? 'new'}
@@ -147,14 +134,17 @@ export default function Inventory() {
                     onDeleted={removePurchase}
                 />
             )}
-            {saleItem && (
+            {saleDialogOpen && (
                 <SaleDialog
-                    item={saleItem}
-                    items={allItems}
+                    insertExpense={insertExpense}
+                    updateExpense={updateExpense}
+                    deleteExpense={deleteExpense}
+                    handlePriceChange={handlePriceChange}
+                    handleSoldDateChange={handleSoldDateChange}
                     saleDraft={saleDraft}
                     onDeleteSelectedItem={removeItemFromDraft}
                     onUpdateSelectedItem={updateItemInDraft}
-                    onClose={() => setSaleItem(null)}
+                    onClose={() => closeSaleDialog()}
                     onSaved={handleSaleSaved}
                 />
             )}

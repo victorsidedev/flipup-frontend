@@ -1,81 +1,61 @@
-import { Stack, Typography, Button, TextField, MenuItem, IconButton } from '@mui/material';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import PriceField from './PriceField';
+import { Stack, Typography, Button, IconButton } from '@mui/material';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useState } from 'react';
+import Expenses from './Expenses.jsx';
 
 export default function SaleExpenses({
+    saleId,
+    itemId,
     expenses,
-    setExpenses,
-    saving,
-    emptyExpense,
+    insertExpense,
     updateExpense,
+    deleteExpense,
+    saving,
 }) {
+    const [expensesOpen, setExpensesOpen] = useState(true);
+    const visibleExpenses = expenses.filter((expense) => expense.itemId ? false: true);
+    const total = visibleExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+
     return (
         <>
             <Stack
                 direction="row"
                 sx={{ pb:0, alignItems: 'center', justifyContent: 'space-between'}}
             >
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Sale Expenses</Typography>
+                <Stack
+                    direction="row"
+                    onClick={() => setExpensesOpen((current) => !current)}
+                    sx={{ alignItems: 'center', gap: '.25rem', cursor: 'pointer' }}
+                >
+                    <IconButton
+                        size="small"
+                        sx={{ p: 0 }}
+                        aria-label={expensesOpen ? 'Collapse expenses' : 'Expand expenses'}
+                    >
+                        {expensesOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                    </IconButton>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Sale Expenses</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {visibleExpenses.length} · ${total.toFixed(2)}
+                    </Typography>
+                </Stack>
                 <Button
-                    onClick={() => setExpenses((current) => [...current, emptyExpense()])}
+                    onClick={() => insertExpense({})}
                     disabled={saving}
                     sx={{ fontWeight: 'light' }}
                 >
-                    + Add Expense
+                    + Add
                 </Button>
             </Stack>
-            <Stack sx={{ gap: 1.5 }}>
-                {expenses.map((expense, index) => (
-                    <Stack direction='row'>
-                        <Stack
-                            key={index}
-                            sx={{ gap: 1 }}
-                        >
-                            <Stack
-                                direction='row'
-                                sx={{ gap: 1, alignItems: { sm: 'center' } }}
-                            >
-                                <TextField
-                                    select
-                                    label="Type"
-                                    value={expense.type}
-                                    onChange={(event) => updateExpense(index, 'type', event.target.value)}
-                                    disabled={saving}
-                                    sx={{ minWidth: 150 }}
-                                >
-                                    <MenuItem value="payment_fee">Payment fee</MenuItem>
-                                    <MenuItem value="shipping_fee">Shipping fee</MenuItem>
-                                </TextField>
-                                <PriceField
-                                    value={expense.amount}
-                                    onChange={(event) => updateExpense(index, 'amount', event.target.value)}
-                                    disabled={saving}
-                                    required={true}
-                                    sx={{ width: 115 }}
-                                />
-                            </Stack>
-                            <TextField
-                                fullWidth
-                                label="Description"
-                                value={expense.description}
-                                onChange={(event) => updateExpense(index, 'description', event.target.value)}
-                                disabled={saving}
-                            />
-                        </Stack>
-                        <IconButton
-                            aria-label={`Remove expense ${index + 1}`}
-                            onClick={() =>
-                                setExpenses((current) =>
-                                    current.filter((_, expenseIndex) => expenseIndex !== index),
-                                )
-                            }
-                            disabled={saving}
-                        >
-                            <DeleteOutlinedIcon />
-                        </IconButton>
-                    </Stack>
-                ))}
-            </Stack>
+            <Expenses
+                expenses={visibleExpenses}
+                updateExpense={updateExpense}
+                deleteExpense={deleteExpense}
+                saving={saving}
+                open={expensesOpen}
+            />
         </>
     );
 }
+

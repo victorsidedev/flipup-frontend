@@ -1,13 +1,7 @@
 import { Stack, TextField } from '@mui/material';
 import PriceField from './PriceField.jsx';
 
-export default function SaleDetails({ price, setPrice, soldDate, setSoldDate, saving }) {
-    const handlePriceChange = (event) => {
-        const value = event.target.value;
-        if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-            setPrice(value);
-        }
-    };
+export default function SaleDetails({ price, soldDate, handlePriceChange, handleSoldDateChange, saving }) {
     return (
         <Stack direction="row" spacing={2}>
             <PriceField
@@ -22,7 +16,7 @@ export default function SaleDetails({ price, setPrice, soldDate, setSoldDate, sa
                 label="Sold on"
                 type="date"
                 value={soldDate}
-                onChange={(event) => setSoldDate(event.target.value)}
+                onChange={handleSoldDateChange}
                 disabled={saving}
                 slotProps={{ inputLabel: { shrink: true } }}
             />

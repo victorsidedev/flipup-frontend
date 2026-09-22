@@ -4,7 +4,13 @@ import { formatMoney } from '../../utils/formatters.js';
 import { Checkbox } from '@mui/material';
 import { green, grey } from '@mui/material/colors';
 
-export default function InventoryItem({ item, saleDraft, onSell, onOpen, onItemToggle }) {
+export default function InventoryItem({
+  item,
+  saleDraft,
+  onSell,
+  onOpen,
+  onItemSelectToggle
+}) {
   const parentPath = item.ancestors.map((parent) => `${parent.name} (#${parent.id})`).join(' → ');
   const sold = item.status === 'sold';
   const loss = item.sale?.kind === 'loss';
@@ -31,8 +37,8 @@ export default function InventoryItem({ item, saleDraft, onSell, onOpen, onItemT
       }}
     >
         {!sold && <Checkbox
-            checked={saleDraft?.items?.some((draftItem) => draftItem.id === item.id)}
-            onChange={(e) => onItemToggle(item)}
+            checked={!!saleDraft?.items?.some((draftItem) => draftItem.id === item.id)}
+            onChange={(e) => onItemSelectToggle(item)}
             slotProps={{
                 input: { 'aria-label': 'controlled' }
             }}

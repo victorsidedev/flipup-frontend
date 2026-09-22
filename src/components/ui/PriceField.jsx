@@ -8,21 +8,33 @@ export default function PriceField({ value, onChange, disabled, label, required,
         }
     };
     return (
-        <TextField
-            autoFocus
-            fullWidth
-            label={label}
-            required={required}
-            value={value}
-            onChange={handleChange}
-            disabled={disabled}
-            sx={sx}
-            slotProps={{
-                input: {
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                    inputMode: 'decimal',
-                },
-            }}
-        />
+<TextField
+    autoFocus
+    size="small"
+    label={label}
+    required={required}
+    value={value}
+    onChange={handleChange}
+    disabled={disabled}
+    sx={{
+        '& .MuiInputBase-root': {
+            height: 40,
+        },
+        '& .MuiInputBase-input': {
+            py: 0.75,
+            fontSize: '0.95rem',
+        },
+        '& .MuiInputAdornment-root': {
+            mr: 0.5,
+        },
+        ...sx,
+    }}
+    slotProps={{
+        input: {
+            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+            inputMode: 'decimal',
+        },
+    }}
+/>
     );
 }
