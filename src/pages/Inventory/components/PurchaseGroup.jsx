@@ -10,7 +10,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InventoryItem from '../InventoryItem.jsx';
 import { formatDate } from '../../../utils/formatters.js';
 
-export default function PurchaseGroup({ purchase, saleDraft, items, total, onSell, onOpen, onItemToggle }) {
+export default function PurchaseGroup({ purchase, saleDraft, items, total, onSell, onOpen, onItemSelectToggle }) {
   return (
     <Accordion
       defaultExpanded
@@ -61,7 +61,7 @@ export default function PurchaseGroup({ purchase, saleDraft, items, total, onSel
               item={item}
               onSell={onSell}
               onOpen={(item) => onOpen(purchase.id, item.id)}
-              onItemToggle={onItemToggle}
+              onItemSelectToggle={onItemSelectToggle}
             />
           ))}
         </Box>
