@@ -17,6 +17,8 @@ import usePurchaseEditor from '../purchases/usePurchaseEditor.js';
 
 export default function PurchasePopup({
   open,
+  createDraftWithItem,
+  openSaleDialog,
   toggleOpen,
   purchaseDetails,
   selectedItemId,
@@ -95,6 +97,8 @@ export default function PurchasePopup({
                     items={editor.items}
                     selectedItemId={selectedItemId}
                     onAddItem={editor.addItem}
+                    createDraftWithItem={createDraftWithItem}
+                    openSaleDialog={openSaleDialog}
                     onUpdateItem={editor.updateItem}
                     onDeleteItem={editor.requestItemDeletion}
                     onSell={setSaleItem}

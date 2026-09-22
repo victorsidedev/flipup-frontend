@@ -3,6 +3,8 @@ import { isSavedItem } from '../purchases/purchaseDraft.js';
 import { formatMoney } from '../../utils/formatters.js';
 
 export default function ItemForm({
+  createDraftWithItem,
+  openSaleDialog,
   item,
   items,
   selectedItemId,
@@ -85,7 +87,10 @@ export default function ItemForm({
           {!sold && (
             <Button
               size="small"
-              onClick={() => onSell(item)}
+              onClick={() => {
+                createDraftWithItem(item);
+                openSaleDialog();
+              }}
               disabled={!canSell || !isSavedItem(item)}
             >
               Mark sold
@@ -109,6 +114,8 @@ export default function ItemForm({
               items={items}
               selectedItemId={selectedItemId}
               onAddItem={onAddItem}
+              createDraftWithItem={createDraftWithItem}
+              openSaleDialog={openSaleDialog}
               onUpdateItem={onUpdateItem}
               onDeleteItem={onDeleteItem}
               onSell={onSell}
