@@ -1,7 +1,7 @@
-import Box from "@mui/material/Box";
+import Box from '@mui/material/Box';
 
 function Settings() {
-    return <Box />;
+  return <Box />;
 }
 
 export default Settings;

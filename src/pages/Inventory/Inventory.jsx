@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useSaleDraft from './hooks/useSaleDraft.js';
 import { Alert, Box, Button, CircularProgress, Stack } from '@mui/material';
 import AddPurchaseButton from './components/AddPurchaseButton.jsx';
 import InventoryEmpty from './components/InventoryEmpty.jsx';
@@ -11,23 +12,45 @@ import { filterPurchaseItems } from './inventoryData.js';
 
 export default function Inventory() {
     const { purchases, loading, error, refresh, updatePurchase, removePurchase } = useInventory();
+    const {
+        openSaleDialog,
+        closeSaleDialog,
+        clearSaleDraft,
+        insertExpense,
+        updateExpense,
+        deleteExpense,
+        saleDraft,
+        saleDialogOpen,
+        createDraftWithItem,
+        toggleItemInDraft,
+        updateItemInDraft,
+        removeItemFromDraft,
+        handlePriceChange,
+        handleSoldDateChange
+    } = useSaleDraft();
+
     const [query, setQuery] = useState('');
     const [status, setStatus] = useState('all');
-    const [saleItem, setSaleItem] = useState(null);
     const [notice, setNotice] = useState('');
     const [editor, setEditor] = useState(null);
-    const allItems = purchases.flatMap(group => group.items);
-    const soldCount = allItems.filter(item => item.status === 'sold' || item.status === 'included').length;
-    const groups = purchases.map(({ purchase, items }) => ({
-        purchase,
-        total: items.length,
-        items: filterPurchaseItems(purchase, items, query, status),
-    })).filter(group => group.items.length > 0 || (group.total === 0 && !query.trim() && status === 'all'));
+
+    const allItems = purchases.flatMap((group) => group.items);
+    const soldCount = allItems.filter((item) => item.status === 'sold').length;
+    const groups = purchases
+        .map(({ purchase, items }) => ({
+            purchase,
+            total: items.length,
+            items: filterPurchaseItems(purchase, items, query, status),
+        }))
+        .filter(
+            (group) => group.items.length > 0 || (group.total === 0 && !query.trim() && status === 'all'),
+        );
+
 
     function handleSaleSaved(purchase) {
         updatePurchase(purchase);
-        setNotice(`Sale recorded for ${saleItem.name}.`);
-        setSaleItem(null);
+        setNotice(`Sale recorded for ${saleDraft?.items?.map(item => item.name).join(', ')}.`);
+        clearSaleDraft();
     }
 
     function clearFilters() {
@@ -37,23 +60,96 @@ export default function Inventory() {
 
     return (
         <Box sx={{ maxWidth: 1440, mx: 'auto', minWidth: 0, pb: 10 }}>
-            <InventoryToolbar total={allItems.length} sold={soldCount} query={query} status={status}
-                onQueryChange={setQuery} onStatusChange={setStatus} onRefresh={refresh} loading={loading} />
-            <Box role="status" aria-live="polite">
-                {notice && <Alert severity="success" onClose={() => setNotice('')} sx={{ mb: 2 }}>{notice}</Alert>}
+            <InventoryToolbar
+                total={allItems.length}
+                sold={soldCount}
+                query={query}
+                status={status}
+                onQueryChange={setQuery}
+                onStatusChange={setStatus}
+                onRefresh={refresh}
+                loading={loading}
+            />
+            <Box
+                role="status"
+                aria-live="polite"
+            >
+                {notice && (
+                    <Alert
+                        severity="success"
+                        onClose={() => setNotice('')}
+                        sx={{ mb: 2 }}
+                    >
+                        {notice}
+                    </Alert>
+                )}
             </Box>
-            {loading && <Stack role="status" direction="row" sx={{ gap: 2, alignItems: 'center', py: 4 }}>
-                <CircularProgress size={24} />Loading inventory…
-            </Stack>}
-            {!loading && error && <Alert severity="error" action={<Button onClick={refresh}>Retry</Button>}>{error}</Alert>}
-            {!loading && !error && (groups.length > 0
-                ? groups.map(group => <PurchaseGroup key={group.purchase.id} {...group} onSell={setSaleItem} onOpen={(purchaseId, itemId) => setEditor({ purchaseId, itemId })} />)
-                : <InventoryEmpty hasItems={allItems.length > 0} onClear={clearFilters} />)}
+            {loading && (
+                <Stack
+                    role="status"
+                    direction="row"
+                    sx={{ gap: 2, alignItems: 'center', py: 4 }}
+                >
+                    <CircularProgress size={24} />
+                    Loading inventory…
+                </Stack>
+            )}
+            {!loading && error && (
+                <Alert
+                    severity="error"
+                    action={<Button onClick={refresh}>Retry</Button>}
+                >
+                    {error}
+                </Alert>
+            )}
+            {!loading &&
+                !error &&
+                (groups.length > 0 ? (
+                    groups.map((group) => (
+                        <PurchaseGroup
+                            key={group.purchase.id}
+                            saleDraft={saleDraft}
+                            {...group}
+                            onSell={createDraftWithItem}
+                            onOpen={(purchaseId, itemId) => setEditor({ purchaseId, itemId })}
+                            onItemSelectToggle={toggleItemInDraft}
+                        />
+                    ))
+                ) : (
+                    <InventoryEmpty
+                        hasItems={allItems.length > 0}
+                        onClear={clearFilters}
+                    />
+                ))}
             <AddPurchaseButton onClick={() => setEditor({ purchaseId: null, itemId: null })} />
-            {editor && <PurchasePopup key={editor.purchaseId ?? 'new'} open toggleOpen={() => setEditor(null)}
-                purchaseDetails={purchases.find(group => group.purchase.id === editor.purchaseId)} selectedItemId={editor.itemId}
-                onSaved={updatePurchase} onDeleted={removePurchase} />}
-            {saleItem && <SaleDialog item={saleItem} onClose={() => setSaleItem(null)} onSaved={handleSaleSaved} />}
+            {saleDraft?.items?.length > 0 && <Button onClick={() => openSaleDialog()}> Record Sales </Button>}
+            {editor && (
+                <PurchasePopup
+                    key={editor.purchaseId ?? 'new'}
+                    open
+                    createDraftWithItem={createDraftWithItem}
+                    openSaleDialog={openSaleDialog}
+                    toggleOpen={() => setEditor(null)}
+                    purchaseDetails={purchases.find((group) => group.purchase.id === editor.purchaseId)}
+                    selectedItemId={editor.itemId}
+                    onSaved={updatePurchase}
+                    onDeleted={removePurchase}
+                />
+            )}
+            {saleDialogOpen && (
+                <SaleDialog
+                    insertExpense={insertExpense}
+                    updateExpense={updateExpense}
+                    deleteExpense={deleteExpense}
+                    handlePriceChange={handlePriceChange}
+                    handleSoldDateChange={handleSoldDateChange}
+                    saleDraft={saleDraft}
+                    onDeleteSelectedItem={removeItemFromDraft}
+                    onUpdateSelectedItem={updateItemInDraft}
+                    onClose={() => closeSaleDialog()}
+                    onSaved={handleSaleSaved}
+                />
+            )}
         </Box>
     );
 }

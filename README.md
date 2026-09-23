@@ -18,10 +18,10 @@ Restart Vite after changing environment variables.
 
 ## Environment configuration
 
-| Variable | Purpose |
-| --- | --- |
+| Variable            | Purpose                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `VITE_API_BASE_URL` | Browser-visible backend URL, including any API path prefix. Defaults to `/api` in development; required for builds. |
-| `API_PROXY_TARGET` | Backend target for the development proxy. Defaults to `http://127.0.0.1:8000`. Not included in the browser bundle. |
+| `API_PROXY_TARGET`  | Backend target for the development proxy. Defaults to `http://127.0.0.1:8000`. Not included in the browser bundle.  |
 
 Set `VITE_API_BASE_URL=https://your-backend.onrender.com` if the backend serves `/purchases`.
 Set `VITE_API_BASE_URL=https://your-backend.onrender.com/api` if it serves `/api/purchases`.
